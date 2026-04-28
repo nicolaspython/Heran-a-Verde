@@ -12,8 +12,8 @@ from typing import Dict, Any, Optional
 
 # Configuration
 BASE_URL = os.getenv("NEXT_PUBLIC_BASE_URL", "http://localhost:3000").rstrip("/") + "/api"
-ADMIN_EMAIL = "admin@hercaverde.com"
-ADMIN_PASSWORD = "admin123"
+ADMIN_EMAIL = "***REMOVED***"
+ADMIN_PASSWORD = "***REMOVED***"
 
 # Test data
 SAMPLE_BASE64_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
