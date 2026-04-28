@@ -145,7 +145,11 @@ function HomeView({ setView }) {
             Herança Verde
           </h1>
           <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+<<<<<<< HEAD
             Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez.
+=======
+            Catalogando, preservando e celebrando o patrimônio botânico do nosso campus — uma planta de cada vez.
+>>>>>>> 9aadbe226a09aa607dd0eaedf610e28ce1a129a0
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setView({ name: 'catalog' })}>
@@ -162,7 +166,11 @@ function HomeView({ setView }) {
         {[
           { label: 'Espécies catalogadas', value: stats.speciesCount, icon: Leaf },
           { label: 'Categorias botânicas', value: stats.categoriesCount, icon: BookOpen },
+<<<<<<< HEAD
           { label: 'Membros', value: stats.teamCount, icon: Users },
+=======
+          { label: 'Pesquisadores', value: stats.teamCount, icon: Users },
+>>>>>>> 9aadbe226a09aa607dd0eaedf610e28ce1a129a0
         ].map((s) => (
           <Card key={s.label} className="border-emerald-100 dark:border-emerald-900/40">
             <CardContent className="pt-6">
