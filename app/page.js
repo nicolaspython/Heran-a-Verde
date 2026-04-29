@@ -166,7 +166,6 @@ function HomeView({ setView }) {
           { label: 'Espécies catalogadas', value: stats.speciesCount, icon: Leaf },
           { label: 'Categorias botânicas', value: stats.categoriesCount, icon: BookOpen },
           { label: 'Membros', value: stats.teamCount, icon: Users },
-          { label: 'Pesquisadores', value: stats.teamCount, icon: Users },
 
         ].map((s) => (
           <Card key={s.label} className="border-emerald-100 dark:border-emerald-900/40">
