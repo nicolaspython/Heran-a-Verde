@@ -1,13 +1,13 @@
 {
-  "name": "nextjs-mongo-template",
-  "version": "0.1.0",
+  "name": "heranca-verde",
+  "version": "1.0.0",
   "private": true,
+  "description": "Herança Verde — Inventário botânico do Liceu de Messejana",
   "scripts": {
     "dev": "next dev",
-    "dev:no-reload": "next dev --hostname 0.0.0.0 --port 3000",
-    "dev:webpack": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -52,9 +52,9 @@
     "mongodb": "^6.6.0",
     "next": "14.2.3",
     "next-themes": "^0.4.6",
-    "react": "^18",
+    "react": "^18.3.1",
     "react-day-picker": "^9.7.0",
-    "react-dom": "^18",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.58.1",
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.3",
@@ -67,9 +67,12 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",
-    "globals": "^16.2.0",
-    "postcss": "^8",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8.4.38",
     "tailwindcss": "^3.4.1"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "engines": {
+    "node": ">=18.17.0"
+  }
 }
