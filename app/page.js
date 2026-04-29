@@ -449,8 +449,8 @@ function AboutView() {
       <h1 className="text-4xl font-bold mb-6">Sobre o Projeto</h1>
       <div className="prose prose-emerald dark:prose-invert max-w-none">
         <p className="text-lg text-muted-foreground leading-relaxed">
-          O <strong className="text-foreground">Herança Verde</strong> é uma iniciativa do Liceu de Messejana,
-          em Fortaleza/CE, dedicada a catalogar, preservar e divulgar o patrimônio botânico vivo do nosso campus.
+          O <strong className="text-foreground">Herança Verde</strong> é uma iniciativa de estudantes do Liceu de Messejana,
+          em Fortaleza/CE, dedicada a catalogar, preservar e divulgar o patrimônio botânico vivo da nossa escola.
         </p>
         <p className="mt-4 text-muted-foreground leading-relaxed">
           Cada espécie cadastrada nesta plataforma é parte da história da escola. Ao identificar, fotografar e
