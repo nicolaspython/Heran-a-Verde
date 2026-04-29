@@ -371,7 +371,16 @@ function SpeciesDetailView({ id, setView }) {
 // ---------------- Team Public View ----------------
 function TeamView() {
   const [team, setTeam] = useState([]);
-  useEffect(() => { api('/team').then(setTeam).catch(() => {}); }, []);
+  useEffect(() => {
+  api('/team')
+    .then((data) => {
+      console.log("TEAM:", data);
+      setTeam(data);
+    })
+    .catch((err) => {
+      console.error("ERRO API TEAM:", err);
+    });
+}, []);
   const main = team.find((m) => m.isMainCreator);
   const others = team.filter((m) => !m.isMainCreator);
   return (
