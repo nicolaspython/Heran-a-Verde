@@ -477,7 +477,7 @@ function AboutView() {
 
 // ---------------- Admin Login ----------------
 function AdminLoginView({ onLogin }) {
-  const [email, setEmail] = useState('admin@hercaverde.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const submit = async (e) => {
@@ -515,7 +515,7 @@ function AdminLoginView({ onLogin }) {
             <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">Padrão: admin@hercaverde.com / admin123</p>
+            <p className="text-xs text-muted-foreground text-center"></p>
           </form>
         </CardContent>
       </Card>
