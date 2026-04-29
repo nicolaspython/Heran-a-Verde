@@ -9,7 +9,6 @@ const DB_NAME = process.env.DB_NAME || 'heranca_verde';
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '***REMOVED***').toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '***REMOVED***';
-
 // ---------------- MongoDB connection (cached for serverless) ----------------
 async function getDb() {
   if (!globalThis.__hv_mongo) {
