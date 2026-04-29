@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'heranca_verde';
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '***REMOVED***').toLowerCase();
