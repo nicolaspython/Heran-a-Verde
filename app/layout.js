@@ -1,6 +1,7 @@
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {
   title: 'Herança Verde — Inventário Botânico',
