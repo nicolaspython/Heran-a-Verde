@@ -460,10 +460,9 @@ function AboutView() {
         </p>
         <h2 className="mt-8 text-2xl font-bold">Objetivos</h2>
         <ul className="mt-3 space-y-2 text-muted-foreground">
-          <li>🌱 Identificar e catalogar todas as espécies vegetais do campus</li>
-          <li>📸 Documentar com fotografias e descrições detalhadas</li>
-          <li>📚 Servir como recurso educacional para alunos e professores</li>
-          <li>🌳 Estimular o cuidado e a preservação do verde escolar</li>
+          <li> Identificar e catalogar todas as espécies vegetais do campus</li>
+          <li> Documentar com fotografias e descrições detalhadas</li>
+          <li> Estimular o cuidado e a preservação do verde escolar</li>
         </ul>
         <h2 className="mt-8 text-2xl font-bold">Como contribuir</h2>
         <p className="text-muted-foreground">
