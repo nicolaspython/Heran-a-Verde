@@ -672,8 +672,39 @@ function SpeciesAdmin() {
                 <p className="text-sm text-muted-foreground truncate">{s.commonName}</p>
                 {s.categoryName && <Badge variant="outline" className="mt-1 text-xs">{s.categoryName}</Badge>}
                 <div className="flex gap-1 mt-2">
-                  <Button size="sm" variant="ghost" onClick={() => openEdit(s)}><Pencil className="h-3 w-3" /></Button>
-                  <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
+  <Button
+    size="sm"
+    variant="ghost"
+    onClick={async () => {
+      try {
+        await api(`/species/${s.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ featured: !s.featured })
+        });
+
+        toast.success(
+          s.featured ? 'Removido do destaque' : 'Adicionado ao destaque'
+        );
+
+        load();
+      } catch (e) {
+        toast.error(e.message);
+      }
+    }}
+  >
+    <Star
+      className={`h-4 w-4 ${
+        s.featured ? 'text-yellow-500 fill-yellow-500' : ''
+      }`}
+    />
+  </Button>
+
+  <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>
+    <Pencil className="h-3 w-3" />
+  </Button>
+
+  <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
+</div>
                 </div>
               </div>
             </div>
