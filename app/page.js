@@ -146,7 +146,7 @@ function HomeView({ setView }) {
           </h1>
           <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
 
-            Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez. contato na área de 
+            Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez. contato na área de equipe.
 
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
