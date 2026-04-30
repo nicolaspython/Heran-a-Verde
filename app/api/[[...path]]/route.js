@@ -9,6 +9,7 @@ const DB_NAME = process.env.DB_NAME || 'heranca_verde';
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '***REMOVED***').toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '***REMOVED***';
+
 // ---------------- MongoDB connection (cached for serverless) ----------------
 async function getDb() {
   if (!globalThis.__hv_mongo) {
@@ -180,8 +181,11 @@ async function handle(request, { params }) {
       const url = new URL(request.url);
       const search = (url.searchParams.get('search') || '').toLowerCase();
       const category = url.searchParams.get('category') || '';
+      // FIX: suporte ao filtro featured=true via query param
+      const featuredOnly = url.searchParams.get('featured') === 'true';
       const query = {};
       if (category) query.categoryId = category;
+      if (featuredOnly) query.featured = true;
       let items = await db.collection('species').find(query).sort({ createdAt: -1 }).limit(1000).toArray();
       if (search) {
         items = items.filter((s) =>
@@ -207,6 +211,8 @@ async function handle(request, { params }) {
         characteristics: body.characteristics || '',
         location: body.location || '',
         images: Array.isArray(body.images) ? body.images : [],
+        // FIX: salvar campo featured na criação
+        featured: !!body.featured,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -222,6 +228,14 @@ async function handle(request, { params }) {
       if (!requireAdmin(request)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
       const id = segments[1];
       const body = await request.json();
+
+      // FIX: se só está vindo o campo featured (toggle rápido), faz update parcial
+      const isFeaturedToggle = Object.keys(body).length === 1 && 'featured' in body;
+      if (isFeaturedToggle) {
+        await db.collection('species').updateOne({ id }, { $set: { featured: !!body.featured, updatedAt: new Date().toISOString() } });
+        return NextResponse.json(clean(await db.collection('species').findOne({ id })));
+      }
+
       const cat = body.categoryId ? await db.collection('categories').findOne({ id: body.categoryId }) : null;
       const update = {
         scientificName: body.scientificName || '',
@@ -233,6 +247,8 @@ async function handle(request, { params }) {
         characteristics: body.characteristics || '',
         location: body.location || '',
         images: Array.isArray(body.images) ? body.images : [],
+        // FIX: preservar/atualizar campo featured no update completo
+        featured: !!body.featured,
         updatedAt: new Date().toISOString(),
       };
       await db.collection('species').updateOne({ id }, { $set: update });

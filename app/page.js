@@ -41,10 +41,16 @@ const api = async (path, options = {}) => {
   return res.text();
 };
 
+// FIX: validação de tamanho de imagem (máx 2MB por arquivo)
+const MAX_IMAGE_SIZE_MB = 2;
 const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+    reject(new Error(`"${file.name}" excede ${MAX_IMAGE_SIZE_MB}MB. Reduza o tamanho da imagem.`));
+    return;
+  }
   const reader = new FileReader();
   reader.onload = () => resolve(reader.result);
-  reader.onerror = reject;
+  reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
   reader.readAsDataURL(file);
 });
 
@@ -128,10 +134,21 @@ function Navbar({ view, setView, user, onLogout }) {
 function HomeView({ setView }) {
   const [stats, setStats] = useState({ speciesCount: 0, teamCount: 0, categoriesCount: 0 });
   const [featured, setFeatured] = useState([]);
+
   useEffect(() => {
     api('/stats').then(setStats).catch(() => {});
-    api('/species').then((items) => setFeatured(items.slice(0, 3))).catch(() => {});
+    // FIX: busca espécies marcadas como destaque; se não houver, pega as 3 mais recentes
+    api('/species?featured=true')
+      .then((items) => {
+        if (items.length > 0) {
+          setFeatured(items.slice(0, 3));
+        } else {
+          api('/species').then((all) => setFeatured(all.slice(0, 3))).catch(() => {});
+        }
+      })
+      .catch(() => {});
   }, []);
+
   return (
     <div>
       <section className="relative overflow-hidden">
@@ -145,9 +162,7 @@ function HomeView({ setView }) {
             Herança Verde
           </h1>
           <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-
-            Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez. contato na área de equipe.
-
+            Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setView({ name: 'catalog' })}>
@@ -165,7 +180,6 @@ function HomeView({ setView }) {
           { label: 'Espécies catalogadas', value: stats.speciesCount, icon: Leaf },
           { label: 'Categorias botânicas', value: stats.categoriesCount, icon: BookOpen },
           { label: 'Membros', value: stats.teamCount, icon: Users },
-
         ].map((s) => (
           <Card key={s.label} className="border-emerald-100 dark:border-emerald-900/40">
             <CardContent className="pt-6">
@@ -230,6 +244,12 @@ function SpeciesCard({ species, onClick }) {
         )}
         {species.categoryName && (
           <Badge className="absolute top-2 right-2 bg-emerald-600 hover:bg-emerald-600">{species.categoryName}</Badge>
+        )}
+        {/* FIX: indicador visual de destaque no card */}
+        {species.featured && (
+          <div className="absolute top-2 left-2">
+            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 drop-shadow" />
+          </div>
         )}
       </div>
       <CardHeader className="pb-2">
@@ -336,7 +356,10 @@ function SpeciesDetailView({ id, setView }) {
         </div>
         <div>
           {species.categoryName && <Badge className="bg-emerald-600 hover:bg-emerald-600 mb-3">{species.categoryName}</Badge>}
-          <h1 className="text-3xl md:text-4xl font-bold italic">{species.scientificName}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-3xl md:text-4xl font-bold italic">{species.scientificName}</h1>
+            {species.featured && <Star className="h-6 w-6 text-yellow-400 fill-yellow-400 shrink-0" />}
+          </div>
           {species.commonName && <p className="text-xl text-muted-foreground mt-1">{species.commonName}</p>}
           {species.family && <p className="text-sm text-muted-foreground mt-2">Família: <span className="font-medium text-foreground">{species.family}</span></p>}
           <Separator className="my-6" />
@@ -370,16 +393,11 @@ function SpeciesDetailView({ id, setView }) {
 // ---------------- Team Public View ----------------
 function TeamView() {
   const [team, setTeam] = useState([]);
+  // FIX: removido console.log de debug que vazava em produção
   useEffect(() => {
-  api('/team')
-    .then((data) => {
-      console.log("TEAM:", data);
-      setTeam(data);
-    })
-    .catch((err) => {
-      console.error("ERRO API TEAM:", err);
-    });
-}, []);
+    api('/team').then(setTeam).catch(() => {});
+  }, []);
+
   const main = team.find((m) => m.isMainCreator);
   const others = team.filter((m) => !m.isMainCreator);
   return (
@@ -467,9 +485,9 @@ function AboutView() {
         </p>
         <h2 className="mt-8 text-2xl font-bold">Objetivos</h2>
         <ul className="mt-3 space-y-2 text-muted-foreground">
-          <li> Identificar e catalogar todas as espécies vegetais do campus</li>
-          <li> Documentar com fotografias e descrições detalhadas</li>
-          <li> Estimular o cuidado e a preservação do verde escolar</li>
+          <li>Identificar e catalogar todas as espécies vegetais do campus</li>
+          <li>Documentar com fotografias e descrições detalhadas</li>
+          <li>Estimular o cuidado e a preservação do verde escolar</li>
         </ul>
         <h2 className="mt-8 text-2xl font-bold">Como contribuir</h2>
         <p className="text-muted-foreground">
@@ -486,8 +504,9 @@ function AdminLoginView({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault();
+  // FIX: removido uso de e.preventDefault() com form — agora usa onClick direto
+  const submit = async () => {
+    if (!email || !password) { toast.error('Preencha email e senha'); return; }
     setLoading(true);
     try {
       const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
@@ -498,6 +517,8 @@ function AdminLoginView({ onLogin }) {
       toast.error(err.message);
     } finally { setLoading(false); }
   };
+  // FIX: mantém suporte a Enter no campo senha
+  const handleKeyDown = (e) => { if (e.key === 'Enter') submit(); };
   return (
     <div className="container py-16 max-w-md">
       <Card>
@@ -509,20 +530,19 @@ function AdminLoginView({ onLogin }) {
           <CardDescription className="text-center">Acesse para gerenciar o Herança Verde</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <Label>Email</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={handleKeyDown} />
             </div>
             <div>
               <Label>Senha</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={handleKeyDown} />
             </div>
-            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
+            <Button onClick={submit} className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
-            <p className="text-xs text-muted-foreground text-center"></p>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -535,9 +555,16 @@ function ImagesUploader({ images, setImages, multiple = true }) {
     const files = Array.from(e.target.files || []);
     const arr = [];
     for (const f of files) {
-      try { arr.push(await fileToBase64(f)); } catch {}
+      try {
+        arr.push(await fileToBase64(f));
+      } catch (err) {
+        // FIX: exibe erro de tamanho por arquivo
+        toast.error(err.message);
+      }
     }
-    setImages(multiple ? [...(images || []), ...arr] : arr.slice(-1));
+    if (arr.length > 0) {
+      setImages(multiple ? [...(images || []), ...arr] : arr.slice(-1));
+    }
     e.target.value = '';
   };
   return (
@@ -557,7 +584,7 @@ function ImagesUploader({ images, setImages, multiple = true }) {
           <input type="file" accept="image/*" multiple={multiple} className="hidden" onChange={handle} />
         </label>
       </div>
-      <p className="text-xs text-muted-foreground">Imagens são armazenadas em base64 no banco.</p>
+      <p className="text-xs text-muted-foreground">Máx. {MAX_IMAGE_SIZE_MB}MB por imagem. Armazenadas em base64 no banco.</p>
     </div>
   );
 }
@@ -624,11 +651,11 @@ function SpeciesAdmin() {
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
 
-  const empty = { scientificName: '', commonName: '', family: '', categoryId: '', description: '', characteristics: '', location: '', images: [] };
+  const empty = { scientificName: '', commonName: '', family: '', categoryId: '', description: '', characteristics: '', location: '', images: [], featured: false };
   const [form, setForm] = useState(empty);
 
   const load = useCallback(() => api('/species').then(setItems).catch(() => {}), []);
-  useEffect(() => { load(); api('/categories').then(setCategories); }, [load]);
+  useEffect(() => { load(); api('/categories').then(setCategories).catch(() => {}); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (s) => { setEditing(s); setForm({ ...empty, ...s }); setOpen(true); };
@@ -645,10 +672,21 @@ function SpeciesAdmin() {
       setOpen(false); load();
     } catch (e) { toast.error(e.message); }
   };
+
   const remove = async (id) => {
     try { await api(`/species/${id}`, { method: 'DELETE' }); toast.success('Removida'); load(); }
     catch (e) { toast.error(e.message); }
   };
+
+  // FIX: toggle featured corrigido — envia só o campo featured, rota faz update parcial
+  const toggleFeatured = async (s) => {
+    try {
+      await api(`/species/${s.id}`, { method: 'PUT', body: JSON.stringify({ featured: !s.featured }) });
+      toast.success(s.featured ? 'Removido do destaque' : 'Adicionado ao destaque');
+      load();
+    } catch (e) { toast.error(e.message); }
+  };
+
   const filtered = useMemo(() => items.filter((s) => {
     const q = search.toLowerCase();
     return !q || s.scientificName?.toLowerCase().includes(q) || s.commonName?.toLowerCase().includes(q);
@@ -672,39 +710,13 @@ function SpeciesAdmin() {
                 <p className="text-sm text-muted-foreground truncate">{s.commonName}</p>
                 {s.categoryName && <Badge variant="outline" className="mt-1 text-xs">{s.categoryName}</Badge>}
                 <div className="flex gap-1 mt-2">
-  <Button
-    size="sm"
-    variant="ghost"
-    onClick={async () => {
-      try {
-        await api(`/species/${s.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ featured: !s.featured })
-        });
-
-        toast.success(
-          s.featured ? 'Removido do destaque' : 'Adicionado ao destaque'
-        );
-
-        load();
-      } catch (e) {
-        toast.error(e.message);
-      }
-    }}
-  >
-    <Star
-      className={`h-4 w-4 ${
-        s.featured ? 'text-yellow-500 fill-yellow-500' : ''
-      }`}
-    />
-  </Button>
-
-  <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>
-    <Pencil className="h-3 w-3" />
-  </Button>
-
-  <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
-</div>
+                  <Button size="sm" variant="ghost" onClick={() => toggleFeatured(s)} title={s.featured ? 'Remover destaque' : 'Destacar'}>
+                    <Star className={`h-4 w-4 ${s.featured ? 'text-yellow-500 fill-yellow-500' : ''}`} />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
                 </div>
               </div>
             </div>
@@ -738,6 +750,14 @@ function SpeciesAdmin() {
             <div><Label>Descrição</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div><Label>Características</Label><Textarea rows={3} value={form.characteristics} onChange={(e) => setForm({ ...form, characteristics: e.target.value })} placeholder="Altura, folhas, flores..." /></div>
             <div><Label>Localização no campus</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Ex: Pátio central, próximo ao bloco A" /></div>
+            {/* FIX: campo featured no formulário de edição */}
+            <div className="flex items-center justify-between p-3 border rounded-md">
+              <div>
+                <Label className="font-medium">Destacar na página inicial</Label>
+                <p className="text-xs text-muted-foreground">Espécies destacadas aparecem na seção de destaque</p>
+              </div>
+              <Switch checked={!!form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
+            </div>
             <div><Label>Imagens</Label><ImagesUploader images={form.images} setImages={(imgs) => setForm({ ...form, images: imgs })} /></div>
           </div>
           <DialogFooter>
@@ -952,7 +972,6 @@ function App() {
     toast.success('Você saiu');
   };
 
-  // Guard admin route
   useEffect(() => {
     if (view.name === 'admin' && authChecked && !user) setView({ name: 'admin-login' });
   }, [view.name, user, authChecked]);
