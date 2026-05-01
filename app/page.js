@@ -988,10 +988,10 @@ function App() {
       <main className="flex-1">
         {view.name === 'home' && <HomeView setView={setView} />}
         {view.name === 'catalog' && <CatalogView setView={setView} />}
+        {view.name === 'map' && <MapRedirect />}
         {view.name === 'species' && <SpeciesDetailView id={view.id} setView={setView} />}
         {view.name === 'team' && <TeamView />}
         {view.name === 'about' && <AboutView />}
-        {view.name === 'map' && <MapRedirect />}
         {view.name === 'admin-login' && <AdminLoginView onLogin={(u) => { setUser(u); setView({ name: 'admin' }); }} />}
         {view.name === 'admin' && user && <AdminDashboard user={user} setView={setView} />}
       </main>
