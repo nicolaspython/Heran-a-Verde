@@ -81,6 +81,7 @@ function Navbar({ view, setView, user, onLogout }) {
     { id: 'catalog', label: 'Catálogo', icon: Leaf },
     { id: 'team', label: 'Equipe', icon: Users },
     { id: 'about', label: 'Sobre', icon: BookOpen },
+    { id: 'map', label: 'Mapa', icon: MapPin },
   ];
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
@@ -951,7 +952,12 @@ function ConfirmDelete({ onConfirm, label }) {
     </AlertDialog>
   );
 }
-
+function MapRedirect() {
+  useEffect(() => {
+    window.location.href = '/mapa';
+  }, []);
+  return null;
+}
 // ---------------- Root App ----------------
 function App() {
   const [view, setView] = useState({ name: 'home' });
@@ -985,6 +991,7 @@ function App() {
         {view.name === 'species' && <SpeciesDetailView id={view.id} setView={setView} />}
         {view.name === 'team' && <TeamView />}
         {view.name === 'about' && <AboutView />}
+        {view.name === 'map' && <MapRedirect />}
         {view.name === 'admin-login' && <AdminLoginView onLogin={(u) => { setUser(u); setView({ name: 'admin' }); }} />}
         {view.name === 'admin' && user && <AdminDashboard user={user} setView={setView} />}
       </main>
