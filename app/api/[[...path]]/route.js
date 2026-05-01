@@ -181,7 +181,6 @@ async function handle(request, { params }) {
       const url = new URL(request.url);
       const search = (url.searchParams.get('search') || '').toLowerCase();
       const category = url.searchParams.get('category') || '';
-      // FIX: suporte ao filtro featured=true via query param
       const featuredOnly = url.searchParams.get('featured') === 'true';
       const query = {};
       if (category) query.categoryId = category;
@@ -210,8 +209,10 @@ async function handle(request, { params }) {
         description: body.description || '',
         characteristics: body.characteristics || '',
         location: body.location || '',
+        // ← NOVO: coordenadas para o mapa
+        latitude: typeof body.latitude === 'number' ? body.latitude : null,
+        longitude: typeof body.longitude === 'number' ? body.longitude : null,
         images: Array.isArray(body.images) ? body.images : [],
-        // FIX: salvar campo featured na criação
         featured: !!body.featured,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -229,10 +230,17 @@ async function handle(request, { params }) {
       const id = segments[1];
       const body = await request.json();
 
-      // FIX: se só está vindo o campo featured (toggle rápido), faz update parcial
+      // Toggle rápido de featured
       const isFeaturedToggle = Object.keys(body).length === 1 && 'featured' in body;
       if (isFeaturedToggle) {
         await db.collection('species').updateOne({ id }, { $set: { featured: !!body.featured, updatedAt: new Date().toISOString() } });
+        return NextResponse.json(clean(await db.collection('species').findOne({ id })));
+      }
+
+      // ← NOVO: toggle rápido de coordenadas (chamado pelo mapa ao clicar)
+      const isCoordUpdate = Object.keys(body).length === 2 && 'latitude' in body && 'longitude' in body;
+      if (isCoordUpdate) {
+        await db.collection('species').updateOne({ id }, { $set: { latitude: body.latitude, longitude: body.longitude, updatedAt: new Date().toISOString() } });
         return NextResponse.json(clean(await db.collection('species').findOne({ id })));
       }
 
@@ -246,8 +254,10 @@ async function handle(request, { params }) {
         description: body.description || '',
         characteristics: body.characteristics || '',
         location: body.location || '',
+        // ← NOVO: salva coordenadas no update completo
+        latitude: typeof body.latitude === 'number' ? body.latitude : null,
+        longitude: typeof body.longitude === 'number' ? body.longitude : null,
         images: Array.isArray(body.images) ? body.images : [],
-        // FIX: preservar/atualizar campo featured no update completo
         featured: !!body.featured,
         updatedAt: new Date().toISOString(),
       };
