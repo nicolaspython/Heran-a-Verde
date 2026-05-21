@@ -13,7 +13,7 @@ export default function MapPage() {
     fetch("/api/species")
       .then((r) => r.json())
       .then((data) => {
-        // Filtra só as que já têm coordenadas definidas
+        // Filtra só as que já tem coordenadas definidas
         setSpecies(data.filter((s) => s.latitude && s.longitude));
         setLoading(false);
       })
@@ -106,7 +106,7 @@ export default function MapPage() {
           ) : (
             <CampusMap
               species={species}
-              center={[-3.8185, -38.4880]} // Liceu de Messejana
+              center={[-3.81835, -38.48795]} // escola
               zoom={18}
               onViewDetails={(sp) => {
                 window.location.href = `/?view=species&id=${sp.id}`;
