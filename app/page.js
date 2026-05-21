@@ -368,12 +368,41 @@ function CatalogView({ setView }) {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (category && category !== 'all') params.set('category', category);
-    api(`/species?${params.toString()}`)
-      .then((d) => { setItems(d); setLoading(false); })
-      .catch(() => setLoading(false));
+api(`/species?${params.toString()}`)
+  .then((data) => {
+    console.log('Species:', data);
+
+    if (Array.isArray(data)) {
+      setItems(Array.isArray(data) ? data : data.items || []);
+    } else if (Array.isArray(data.species)) {
+      setItems(data.species);
+    } else {
+      setItems([]);
+    }
+
+    setLoading(false);
+  })
+  .catch(() => {
+    setItems([]);
+    setLoading(false);
+  });
   }, [search, category]);
 
-  useEffect(() => { api('/categories').then(setCategories).catch(() => {}); }, []);
+useEffect(() => {
+  api('/categories')
+    .then((data) => {
+      console.log('Categorias:', data);
+
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else if (Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      } else {
+        setCategories([]);
+      }
+    })
+    .catch(() => setCategories([]));
+}, []);
   useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [load]);
 
   return (
@@ -399,7 +428,13 @@ function CatalogView({ setView }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as categorias</SelectItem>
-            {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            {Array.isArray(categories) &&
+  categories.map((c) => (
+    <SelectItem key={c.id} value={c.id}>
+      {c.name}
+    </SelectItem>
+  ))
+}
           </SelectContent>
         </Select>
       </div>
@@ -419,7 +454,8 @@ function CatalogView({ setView }) {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger">
-          {items.map((s) => (
+          {Array.isArray(items) &&
+  Array.isArray(items) && items.map((s) => (
             <SpeciesCard key={s.id} species={s} onClick={() => setView({ name: 'species', id: s.id })} />
           ))}
         </div>
@@ -541,9 +577,28 @@ function SpeciesDetailView({ id, setView }) {
 // ─── Team ─────────────────────────────────────────────────────────────────────
 function TeamView() {
   const [team, setTeam] = useState([]);
-  useEffect(() => { api('/team').then(setTeam).catch(() => {}); }, []);
-  const main = team.find((m) => m.isMainCreator);
-  const others = team.filter((m) => !m.isMainCreator);
+  useEffect(() => {
+  api('/team')
+    .then((data) => {
+      console.log('Team:', data);
+
+      if (Array.isArray(data)) {
+        setTeam(data);
+      } else if (Array.isArray(data.team)) {
+        setTeam(data.team);
+      } else {
+        setTeam([]);
+      }
+    })
+    .catch(() => setTeam([]));
+}, []);
+  const main = Array.isArray(team)
+  ? team.find((m) => m.isMainCreator)
+  : null;
+
+const others = Array.isArray(team)
+  ? team.filter((m) => !m.isMainCreator)
+  : [];
   return (
     <div className="container py-14 animate-fade-in-up">
       <div className="text-center mb-14">
@@ -688,17 +743,27 @@ function AdminLoginView({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      localStorage.setItem('hv_token', r.token);
-      onLogin(r.user);
-      toast.success('Bem-vindo(a) de volta!');
-    } catch (err) {
-      toast.error(err.message);
-    } finally { setLoading(false); }
-  };
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const r = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    localStorage.setItem('hv_token', r.token);
+
+    onLogin(r.user || r);
+
+    toast.success('Bem-vindo(a)!');
+
+  } catch (err) {
+    toast.error(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="container py-20 max-w-sm animate-fade-in-up">
@@ -893,10 +958,19 @@ function SpeciesAdmin() {
     catch (e) { toast.error(e.message); }
   };
 
-  const filtered = useMemo(() => items.filter((s) => {
+  const filtered = useMemo(() => {
+  if (!Array.isArray(items)) return [];
+
+  return items.filter((s) => {
     const q = search.toLowerCase();
-    return !q || s.scientificName?.toLowerCase().includes(q) || s.commonName?.toLowerCase().includes(q);
-  }), [items, search]);
+
+    return (
+      !q ||
+      s.scientificName?.toLowerCase().includes(q) ||
+      s.commonName?.toLowerCase().includes(q)
+    );
+  });
+}, [items, search]);
 
   return (
     <div>
@@ -976,7 +1050,13 @@ function SpeciesAdmin() {
                   <SelectTrigger className="mt-1 rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {Array.isArray(categories) &&
+  categories.map((c) => (
+    <SelectItem key={c.id} value={c.id}>
+      {c.name}
+    </SelectItem>
+  ))
+}
                   </SelectContent>
                 </Select>
               </div>
@@ -1058,7 +1138,7 @@ function TeamAdmin() {
     if (target < 0 || target >= newItems.length) return;
     [newItems[idx], newItems[target]] = [newItems[target], newItems[idx]];
     setItems(newItems);
-    await api('/team/reorder', { method: 'POST', body: JSON.stringify({ ids: newItems.map((m) => m.id) }) });
+    await api('/team/reorder', { method: 'POST', body: JSON.stringify({ ids: newArray.isArray(items) && items.map((m) => m.id) }) });
   };
 
   const addSocial = () => setForm({ ...form, socialLinks: [...(form.socialLinks || []), { label: '', url: '' }] });
@@ -1077,7 +1157,8 @@ function TeamAdmin() {
         </Button>
       </div>
       <div className="space-y-2">
-        {items.map((m, i) => (
+        {Array.isArray(items) &&
+  Array.isArray(items) && items.map((m, i) => (
           <Card key={m.id} className="border-emerald-100 dark:border-emerald-900/40">
             <div className="flex items-center gap-3 p-3">
               <div className="flex flex-col gap-0.5">
@@ -1211,7 +1292,7 @@ function CategoriesAdmin() {
         </Button>
       </div>
       <div className="space-y-2">
-        {items.map((c) => (
+        {Array.isArray(items) && items.map((c) => (
           <Card key={c.id} className="border-emerald-100 dark:border-emerald-900/40">
             <div className="flex items-center gap-2 p-3">
               {editingId === c.id ? (
@@ -1281,12 +1362,21 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('hv_token');
+
     if (token) {
       api('/auth/me')
-        .then((r) => setUser(r.user))
-        .catch(() => localStorage.removeItem('hv_token'))
-        .finally(() => setAuthChecked(true));
-    } else setAuthChecked(true);
+        .then((r) => {
+          setUser(r.user);
+        })
+        .catch(() => {
+          localStorage.removeItem('hv_token');
+        })
+        .finally(() => {
+          setAuthChecked(true);
+        });
+    } else {
+      setAuthChecked(true);
+    }
   }, []);
 
   const onLogout = () => {
@@ -1297,20 +1387,66 @@ function App() {
   };
 
   useEffect(() => {
-    if (view.name === 'admin' && authChecked && !user) setView({ name: 'admin-login' });
+    if (view.name === 'admin' && authChecked && !user) {
+      setView({ name: 'admin-login' });
+    }
   }, [view.name, user, authChecked]);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar view={view} setView={setView} user={user} onLogout={onLogout} />
+      <Navbar
+        view={view}
+        setView={setView}
+        user={user}
+        onLogout={onLogout}
+      />
+
       <main className="flex-1">
-        {view.name === 'home' && <HomeView setView={setView} />}
-        {view.name === 'catalog' && <CatalogView setView={setView} />}
-        {view.name === 'species' && <SpeciesDetailView id={view.id} setView={setView} />}
-        {view.name === 'team' && <TeamView />}
-        {view.name === 'about' && <AboutView />}
-        {view.name === 'admin-login' && <AdminLoginView onLogin={(u) => { setUser(u); setView({ name: 'admin' }); }} />}
-        {view.name === 'admin' && user && <AdminDashboard user={user} setView={setView} />}
+        {view.name === 'home' && (
+          <HomeView setView={setView} />
+        )}
+
+        {view.name === 'catalog' && (
+          <CatalogView setView={setView} />
+        )}
+
+        {view.name === 'species' && (
+          <SpeciesDetailView
+            id={view.id}
+            setView={setView}
+          />
+        )}
+
+        {view.name === 'team' && (
+          <TeamView />
+        )}
+
+        {view.name === 'about' && (
+          <AboutView />
+        )}
+
+        {view.name === 'admin-login' && (
+          <AdminLoginView
+            onLogin={(u) => {
+              setUser(u);
+              setView({ name: 'admin' });
+            }}
+          />
+        )}
+
+        {view.name === 'admin' && (
+          user ? (
+            <AdminDashboard
+              user={user}
+              setView={setView}
+            />
+          ) : (
+            <div className="container py-20 text-center">
+              <div className="inline-block w-6 h-6 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin mb-3" />
+              <p>Carregando painel...</p>
+            </div>
+          )
+        )}
       </main>
     </div>
   );

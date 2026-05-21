@@ -148,7 +148,7 @@ async function handle(request, { params }) {
     // ---------- CATEGORIES ----------
     if (path === '/categories' && method === 'GET') {
       const items = await db.collection('categories').find({}).sort({ name: 1 }).limit(500).toArray();
-      return NextResponse.json(items.map(clean));
+      return NextResponse.json(Array.isArray(items) && items.map(clean));
     }
     if (path === '/categories' && method === 'POST') {
       if (!requireAdmin(request)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -194,7 +194,7 @@ async function handle(request, { params }) {
           (s.family || '').toLowerCase().includes(search)
         );
       }
-      return NextResponse.json(items.map(clean));
+      return NextResponse.json(Array.isArray(items) && items.map(clean));
     }
     if (path === '/species' && method === 'POST') {
       if (!requireAdmin(request)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -263,7 +263,7 @@ async function handle(request, { params }) {
     // ---------- TEAM ----------
     if (path === '/team' && method === 'GET') {
       const items = await db.collection('team').find({}).sort({ order: 1, createdAt: 1 }).limit(500).toArray();
-      return NextResponse.json(items.map(clean));
+      return NextResponse.json(Array.isArray(items) && items.map(clean));
     }
     if (path === '/team' && method === 'POST') {
       if (!requireAdmin(request)) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
