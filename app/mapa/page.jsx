@@ -107,7 +107,7 @@ export default function MapPage() {
             <CampusMap
               species={species}
               center={[-3.823328842842737, -38.48170791235997]} // escola
-              zoom={20}
+              zoom={19}
               onViewDetails={(sp) => {
                 window.location.href = `/?view=species&id=${sp.id}`;
               }}
