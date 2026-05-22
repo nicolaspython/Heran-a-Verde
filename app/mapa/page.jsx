@@ -109,8 +109,8 @@ export default function MapPage() {
               center={[-3.823328842842737, -38.48170791235997]} // escola
               zoom={19}
               onViewDetails={(sp) => {
-                window.location.href = `/?view=species&id=${sp.id}`;
-              }}
+  window.location.href = `/?view=species&id=${sp.id}`;
+}}
               onAddSpecies={handleAddSpecies}
             />
           )}
