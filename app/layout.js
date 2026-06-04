@@ -6,7 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata = {
   title: 'Herança Verde — Inventário Botânico',
-  description: 'Catálogo das espécies vegetais do Liceu de Messejana',
+  description: 'Catálogo das espécies de plantas do Liceu de Messejana',
 };
 
 export default function RootLayout({ children }) {
