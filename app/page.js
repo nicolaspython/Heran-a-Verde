@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import {
@@ -71,6 +72,37 @@ const G = {
   section: 'container mx-auto px-4 sm:px-6',
   fadeUp: 'animate-[fadeUp_0.45s_ease_both]',
 };
+
+// ─── Catalog prefetch cache ───────────────────────────────────────────────────
+// Busca os dados em background assim que o módulo carrega.
+// Quando CatalogView montar, os dados já estão prontos (ou quase).
+const _catalogCache = {
+  species: null,
+  categories: null,
+  promise: null,
+};
+function warmCatalogCache() {
+  if (_catalogCache.promise) return;
+  _catalogCache.promise = Promise.all([
+    api('/species').then((d) => { _catalogCache.species = d; }),
+    api('/categories').then((d) => { _catalogCache.categories = d; }),
+  ]).catch(() => {});
+}
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm animate-pulse">
+      <div className="aspect-[4/3] bg-zinc-100 dark:bg-zinc-800" />
+      <div className="p-4 space-y-2">
+        <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-3/4" />
+        <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-1/2" />
+        <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-full mt-3" />
+        <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-4/5" />
+      </div>
+    </div>
+  );
+}
 
 // ─── Theme toggle ─────────────────────────────────────────────────────────────
 function ThemeToggle() {
@@ -257,6 +289,7 @@ function StatCard({ label, value, icon: Icon, gradient }) {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function HomeView({ setView }) {
+  const router = useRouter();
   const [stats, setStats] = useState({ speciesCount: 0, teamCount: 0, categoriesCount: 0 });
   const [featured, setFeatured] = useState([]);
 
@@ -268,6 +301,8 @@ function HomeView({ setView }) {
         else api('/species').then((all) => setFeatured(all.slice(0, 3))).catch(() => {});
       })
       .catch(() => {});
+    // Pré-aquece o cache do catálogo em background enquanto o usuário está na home
+    warmCatalogCache();
   }, []);
 
   return (
@@ -368,7 +403,7 @@ function HomeView({ setView }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {featured.map((s) => (
-              <SpeciesCard key={s.id} species={s} onClick={() => setView({ name: 'species', id: s.id })} />
+              <SpeciesCard key={s.id} species={s} onClick={() => router.push(`/especies/${s.id}`)} />
             ))}
           </div>
           <div className="mt-6 text-center sm:hidden">
@@ -406,13 +441,22 @@ function Footer() {
 
 // ─── Catalog ──────────────────────────────────────────────────────────────────
 function CatalogView({ setView }) {
-  const [items, setItems] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const router = useRouter();
+  // Inicia com dados do cache se já disponíveis — zero espera na maioria dos casos
+  const [items, setItems] = useState(_catalogCache.species || []);
+  const [categories, setCategories] = useState(_catalogCache.categories || []);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
+  // loading só é true se o cache ainda estiver vazio ao montar
+  const [loading, setLoading] = useState(!_catalogCache.species);
 
   const load = useCallback(() => {
+    // Se não há filtros ativos e o cache tem dados, usa sem mostrar spinner
+    if (!search && category === 'all' && _catalogCache.species) {
+      setItems(_catalogCache.species);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.set('search', search);
@@ -422,8 +466,25 @@ function CatalogView({ setView }) {
       .catch(() => setLoading(false));
   }, [search, category]);
 
-  useEffect(() => { api('/categories').then(setCategories).catch(() => {}); }, []);
+  useEffect(() => {
+    // Se o cache ainda não chegou, espera a promise e atualiza
+    if (!_catalogCache.species) {
+      _catalogCache.promise?.then(() => {
+        if (_catalogCache.categories) setCategories(_catalogCache.categories);
+        if (!search && category === 'all' && _catalogCache.species) {
+          setItems(_catalogCache.species);
+          setLoading(false);
+        }
+      });
+    } else if (_catalogCache.categories) {
+      setCategories(_catalogCache.categories);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => { const t = setTimeout(load, 200); return () => clearTimeout(t); }, [load]);
+
+  // Skeletons mostrados enquanto carrega pela primeira vez
+  const skeletonCount = 8;
 
   return (
     <div className={`${G.section} py-12`}>
@@ -462,9 +523,9 @@ function CatalogView({ setView }) {
 
       {/* Results */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-3 text-zinc-400">
-          <div className="h-8 w-8 rounded-full border-2 border-zinc-200 border-t-emerald-500 animate-spin" />
-          <span className="text-sm">Carregando espécies…</span>
+        // Skeleton grid — a página parece carregada instantaneamente
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {Array.from({ length: skeletonCount }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl">
@@ -477,7 +538,7 @@ function CatalogView({ setView }) {
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-4 font-medium">{items.length} espécie{items.length !== 1 ? 's' : ''} encontrada{items.length !== 1 ? 's' : ''}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {items.map((s) => (
-              <SpeciesCard key={s.id} species={s} onClick={() => setView({ name: 'species', id: s.id })} />
+              <SpeciesCard key={s.id} species={s} onClick={() => router.push(`/especies/${s.id}`)} />
             ))}
           </div>
         </>
@@ -1355,8 +1416,8 @@ function App() {
   const v = params.get('view');
   const id = params.get('id');
   if (v === 'species' && id) {
-    setView({ name: 'species', id });
-    window.history.replaceState({}, '', '/');
+    // Redireciona para a nova URL canônica /especies/:id
+    window.location.replace(`/especies/${id}`);
   }
 }, []);
 
