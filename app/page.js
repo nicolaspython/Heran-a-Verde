@@ -26,6 +26,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import { AnimatePresence, motion } from "framer-motion";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 const api = async (path, options = {}) => {
@@ -1459,16 +1460,39 @@ function App() {
         }
       `}</style>
       <Navbar view={view} setView={setView} user={user} onLogout={onLogout} />
-      <main className="flex-1">
-        {view.name === 'home'        && <HomeView setView={setView} />}
-        {view.name === 'catalog'     && <CatalogView setView={setView} />}
-        {view.name === 'map'         && <MapRedirect />}
-        {view.name === 'species'     && <SpeciesDetailView id={view.id} setView={setView} />}
-        {view.name === 'team'        && <TeamView />}
-        {view.name === 'about'       && <AboutView />}
-        {view.name === 'admin-login' && <AdminLoginView onLogin={(u) => { setUser(u); setView({ name: 'admin' }); }} />}
-        {view.name === 'admin'       && user && <AdminDashboard user={user} setView={setView} />}
-      </main>
+<main className="flex-1">
+  <AnimatePresence mode="wait">
+  <motion.div
+    key={view.name + (view.id || "")}
+    initial={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
+    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+    exit={{ opacity: 0, scale: 1.01, filter: "blur(8px)" }}
+    transition={{
+      duration: 0.22,
+      ease: [0.22, 1, 0.36, 1],
+    }}
+    style={{
+      transformOrigin: "center",
+    }}
+  >
+    {view.name === 'home'        && <HomeView setView={setView} />}
+    {view.name === 'catalog'     && <CatalogView setView={setView} />}
+    {view.name === 'map'         && <MapRedirect />}
+    {view.name === 'species'     && <SpeciesDetailView id={view.id} setView={setView} />}
+    {view.name === 'team'        && <TeamView />}
+    {view.name === 'about'       && <AboutView />}
+    {view.name === 'admin-login' && (
+      <AdminLoginView onLogin={(u) => {
+        setUser(u);
+        setView({ name: 'admin' });
+      }} />
+    )}
+    {view.name === 'admin' && user && (
+      <AdminDashboard user={user} setView={setView} />
+    )}
+  </motion.div>
+</AnimatePresence>
+</main>
     </div>
   );
 }
