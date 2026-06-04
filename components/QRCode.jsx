@@ -1,0 +1,109 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import QRCodeStyling from "qr-code-styling";
+
+const especies = [
+  { id: 1, nome: "Planta caricata", url: "https://herancaverde.vercel.app/especies/7a25d224-2a23-4959-b3f8-815fa7c8c9f3" },
+  { id: 2, nome: "Mamoeiro", url: "https://herancaverde.vercel.app/especies/fdb4ee44-8ab4-4a62-83ea-e7fcf8e23cc2" },
+  { id: 3, nome: "São jorge", url: "https://herancaverde.vercel.app/especies/392f60d5-7fcd-483f-b4d6-7c04bedac090" },
+  { id: 4, nome: "São jose flor", url: "https://herancaverde.vercel.app/especies/d3fb5b33-5bc1-441e-9748-ba256cc60051" },
+  { id: 5, nome: "Rosa do deserto", url: "https://herancaverde.vercel.app/especies/8e44364e-7db2-416f-bfd6-62f4115688fc" },
+  { id: 6, nome: "Areca bambu", url: "https://herancaverde.vercel.app/especies/1a70b930-8a64-4839-92bf-f65fda57e4ae" },
+  { id: 7, nome: "Palmeira de manila", url: "https://herancaverde.vercel.app/especies/7c47aae9-b7c3-40b9-b926-855b79675dcf" },
+  { id: 8, nome: "Ixora casei", url: "https://herancaverde.vercel.app/especies/feb1a99e-fd11-4ff4-bd2a-5f5f5f5da538" },
+];
+
+export default function MultiQR() {
+  const containersRef = useRef([]);
+  const qrRefs = useRef([]);
+
+  useEffect(() => {
+    especies.forEach((item, index) => {
+      const container = containersRef.current[index];
+
+      if (!container) return;
+
+      // evita duplicação
+      container.innerHTML = "";
+
+      const qr = new QRCodeStyling({
+        width: 180,
+        height: 180,
+        data: item.url,
+
+        image: "/plantinha.svg",
+
+        dotsOptions: {
+          color: "#111",
+          type: "rounded",
+        },
+
+        backgroundOptions: {
+          color: "#fff",
+        },
+
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 6,
+        },
+      });
+
+      qr.append(container);
+
+      // salva referência pra download
+      qrRefs.current[index] = qr;
+    });
+  }, []);
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gap: 20,
+      }}
+    >
+      {especies.map((item, index) => (
+        <div
+          key={item.id}
+          style={{
+            padding: 12,
+            borderRadius: 12,
+            border: "1px solid #ddd",
+            textAlign: "center",
+            background: "#fff",
+          }}
+        >
+          {/* QR */}
+          <div ref={(el) => (containersRef.current[index] = el)} />
+
+          {/* nome */}
+          <p style={{ marginTop: 10, fontWeight: 500 }}>
+            {item.nome}
+          </p>
+
+          {/* botão download */}
+          <button
+            onClick={() => {
+              qrRefs.current[index].download({
+                name: item.nome,
+                extension: "png",
+              });
+            }}
+            style={{
+              marginTop: 10,
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              background: "#f9f9f9",
+            }}
+          >
+            Baixar QR
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
