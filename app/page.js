@@ -171,28 +171,25 @@ function Navbar({ view, setView, user, onLogout }) {
         {/* Actions */}
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
-          {user ? (
-            <>
-              <button
-                onClick={() => setView({ name: 'admin' })}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
-              >
-                <Settings className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Admin</span>
-              </button>
-              <button onClick={onLogout} className="w-9 h-9 flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Sair">
-                <LogOut className="h-4 w-4" />
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setView({ name: 'admin-login' })}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <LogIn className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Entrar</span>
-            </button>
-          )}
+          {user && (
+  <>
+    <button
+      onClick={() => setView({ name: 'admin' })}
+      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+    >
+      <Settings className="h-3.5 w-3.5" />
+      <span className="hidden sm:inline">Admin</span>
+    </button>
+
+    <button
+      onClick={onLogout}
+      className="w-9 h-9 flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+      aria-label="Sair"
+    >
+      <LogOut className="h-4 w-4" />
+    </button>
+  </>
+)}
         </div>
       </div>
 
@@ -414,13 +411,12 @@ function HomeView({ setView }) {
         </section>
       )}
 
-      <Footer />
+    <Footer setView={setView} />
     </div>
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-function Footer() {
+function Footer({ setView }) {
   return (
     <footer className="mt-16 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
       <div className={`${G.section} py-10 flex flex-col sm:flex-row items-center justify-between gap-4`}>
@@ -429,16 +425,31 @@ function Footer() {
             <Leaf className="h-4 w-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Herança Verde</p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">Liceu de Messejana · Fortaleza/CE</p>
+            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+              Herança Verde
+            </p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              Liceu de Messejana · Fortaleza/CE
+            </p>
           </div>
         </div>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500">© {new Date().getFullYear()} — Inventário Botânico do Campus</p>
+
+        <div className="flex flex-col items-center sm:items-end">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">
+            © {new Date().getFullYear()} — Inventário Botânico do Campus
+          </p>
+
+          <button
+            onClick={() => setView({ name: 'admin-login' })}
+            className="mt-1 text-[10px] opacity-30 hover:opacity-80 transition-opacity"
+          >
+            nicolas
+          </button>
+        </div>
       </div>
     </footer>
   );
 }
-
 // ─── Catalog ──────────────────────────────────────────────────────────────────
 function CatalogView({ setView }) {
   const router = useRouter();
