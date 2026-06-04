@@ -1,17 +1,8 @@
 "use client";
 
-/**
- * CampusMap.jsx
- *
- * Wrapper que importa MapView de forma dinâmica (next/dynamic),
- * garantindo que o Leaflet só carregue no navegador (nunca no servidor).
- *
- * Use ESTE componente nas suas páginas Next.js, não o MapView diretamente.
- */
-
 import dynamic from "next/dynamic";
 
-// ssr: false é a chave — impede que o Leaflet rode no servidor e quebre
+// ssr: false é a chave ~ impede que o Leaflet rode no servidor e quebre
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
   loading: () => (
