@@ -97,7 +97,7 @@ export default function MultiQR() {
               borderRadius: 8,
               border: "1px solid #ccc",
               cursor: "pointer",
-              background: "#070000",
+              background: "#0d8f13",
             }}
           >
             Baixar QR
