@@ -1,0 +1,11 @@
+[33mcommit f39773d48e6c83e0d93bdf132f5e58a251e187c1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Nicolas <nicolaaaasxd@gmail.com>
+Date:   Fri Jun 5 13:20:52 2026 -0300
+
+    Remove senhas.txt do repositório
+
+[33mcommit a4999a9b9731eff6a1b0e7eaeaed3617c79b0a20[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Nicolas <nicolaaaasxd@gmail.com>
+Date:   Fri Jun 5 13:08:51 2026 -0300
+
+    Remove credenciais hardcoded

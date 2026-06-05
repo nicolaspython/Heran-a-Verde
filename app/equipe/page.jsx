@@ -4,9 +4,49 @@ import { useState, useEffect } from 'react';
 import { Users, Star, ExternalLink } from 'lucide-react';
 import { api, G, getInitials } from '@/lib/api';
 
+function SkeletonCard({ big = false }) {
+  if (big) {
+    return (
+      <div className="mb-14 max-w-2xl mx-auto">
+        <div className="rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-10 text-center shadow-xl animate-pulse">
+          <div className="mx-auto h-24 w-24 rounded-2xl bg-zinc-200 dark:bg-zinc-700 mb-5" />
+          <div className="h-5 w-32 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto mb-4" />
+          <div className="h-7 w-48 bg-zinc-200 dark:bg-zinc-700 rounded-lg mx-auto mb-2" />
+          <div className="h-4 w-28 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto mb-4" />
+          <div className="space-y-2 max-w-sm mx-auto">
+            <div className="h-3 w-full bg-zinc-200 dark:bg-zinc-700 rounded-full" />
+            <div className="h-3 w-4/5 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto" />
+            <div className="h-3 w-3/5 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-7 text-center animate-pulse">
+      <div className="mx-auto h-20 w-20 rounded-2xl bg-zinc-200 dark:bg-zinc-700 mb-4" />
+      <div className="h-5 w-32 bg-zinc-200 dark:bg-zinc-700 rounded-lg mx-auto mb-2" />
+      <div className="h-3 w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto mb-3" />
+      <div className="space-y-1.5">
+        <div className="h-2.5 w-full bg-zinc-200 dark:bg-zinc-700 rounded-full" />
+        <div className="h-2.5 w-4/5 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto" />
+      </div>
+    </div>
+  );
+}
+
 export default function EquipePage() {
   const [team, setTeam] = useState([]);
-  useEffect(() => { api('/team').then(setTeam).catch(() => {}); }, []);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api('/team')
+      .then(setTeam)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   const main = team.find((m) => m.isMainCreator);
   const others = team.filter((m) => !m.isMainCreator);
 
@@ -20,14 +60,28 @@ export default function EquipePage() {
         <p className="text-zinc-400 dark:text-zinc-500 mt-2 text-sm">Pessoas que fazem o Herança Verde acontecer</p>
       </div>
 
-      {team.length === 0 && (
+      {/* Loading skeleton */}
+      {loading && (
+        <>
+          <SkeletonCard big />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </>
+      )}
+
+      {/* Equipe vazia */}
+      {!loading && team.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl">
           <Users className="h-12 w-12 text-zinc-200 dark:text-zinc-700" />
           <p className="text-sm">Equipe ainda não cadastrada.</p>
         </div>
       )}
 
-      {main && (
+      {/* Idealizador */}
+      {!loading && main && (
         <div className="mb-14 max-w-2xl mx-auto">
           <div className="rounded-3xl border border-emerald-100 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/40 p-10 text-center shadow-xl shadow-emerald-500/8">
             <div className="mx-auto h-24 w-24 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-3xl font-black text-white shadow-xl shadow-emerald-500/30 mb-5">
@@ -56,7 +110,8 @@ export default function EquipePage() {
         </div>
       )}
 
-      {others.length > 0 && (
+      {/* Outros membros */}
+      {!loading && others.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {others.map((m) => (
             <div key={m.id} className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-7 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all">
