@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
+import PageTransition from '@/components/PageTransition';
 
 export const metadata = {
   title: 'Herança Verde — Liceu de Messejana',
@@ -15,15 +16,9 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen flex flex-col bg-white dark:bg-zinc-950 antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <style>{`
-              @keyframes fadeUp {
-                from { opacity: 0; transform: translateY(12px); }
-                to   { opacity: 1; transform: translateY(0); }
-              }
-            `}</style>
             <Navbar />
             <main className="flex-1">
-              {children}
+              <PageTransition>{children}</PageTransition>
             </main>
             <Toaster richColors position="bottom-right" />
           </AuthProvider>
