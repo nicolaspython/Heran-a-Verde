@@ -100,10 +100,33 @@ export default function MapPage() {
       <div className="flex-1 p-4 md:p-6">
         <div className="max-w-7xl mx-auto h-[calc(100vh-120px)]">
           {loading ? (
-            <div className="w-full h-full flex items-center justify-center text-green-400">
-              Carregando espécies...
-            </div>
-          ) : (
+  <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+    <div className="relative flex items-center justify-center">
+      <div className="absolute w-20 h-20 rounded-full border-2 border-green-500/20 animate-ping" />
+      <div className="w-16 h-16 rounded-full bg-green-900/60 border border-green-700/40 flex items-center justify-center shadow-lg shadow-green-950/50">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28" height="28"
+          viewBox="0 0 24 24"
+          fill="none" stroke="currentColor"
+          strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+          className="text-green-400 animate-pulse"
+        >
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+      </div>
+    </div>
+    <div className="flex flex-col items-center gap-3">
+      <p className="text-green-300 text-sm font-medium tracking-wide">
+        Carregando espécies...
+      </p>
+      <div className="w-48 h-0.5 bg-green-900/60 rounded-full overflow-hidden">
+        <div className="h-full bg-green-400/60 rounded-full animate-[shimmer_1.5s_ease-in-out_infinite]" />
+      </div>
+    </div>
+  </div>
+) : (
             <CampusMap
               species={species}
               center={[-3.823328842842737, -38.48170791235997]} // escola
