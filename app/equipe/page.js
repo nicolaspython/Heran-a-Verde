@@ -23,7 +23,7 @@ export default function EquipePage() {
       {team.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl">
           <Users className="h-12 w-12 text-zinc-200 dark:text-zinc-700" />
-          <p className="text-sm">Equipe ainda não cadastrada.</p>
+          <p className="text-sm">Carregando...</p>
         </div>
       )}
 
