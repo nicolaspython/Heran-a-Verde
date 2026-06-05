@@ -1,9 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { Leaf } from 'lucide-react';
 import { G } from '@/lib/api';
 
-export default function Footer({ setView }) {
+export default function Footer() {
   return (
     <footer className="mt-16 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
       <div className={`${G.section} py-10 flex flex-col sm:flex-row items-center justify-between gap-4`}>
@@ -21,12 +22,12 @@ export default function Footer({ setView }) {
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             © {new Date().getFullYear()} — Inventário Botânico do Campus
           </p>
-          <button
-            onClick={() => setView({ name: 'admin-login' })}
+          <Link
+            href="/admin"
             className="mt-1 text-[10px] opacity-30 hover:opacity-80 transition-opacity"
           >
             nicolas
-          </button>
+          </Link>
         </div>
       </div>
     </footer>

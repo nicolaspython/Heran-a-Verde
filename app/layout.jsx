@@ -11,7 +11,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-white dark:bg-zinc-950">
+      <body className="min-h-screen flex flex-col bg-white dark:bg-zinc-950 antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <style>{`
