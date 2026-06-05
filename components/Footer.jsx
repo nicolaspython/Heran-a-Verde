@@ -26,7 +26,7 @@ export default function Footer() {
             href="/admin"
             className="mt-1 text-[10px] opacity-30 hover:opacity-80 transition-opacity"
           >
-            nicolas
+            yasmin linda perfeita maravilhosa
           </Link>
         </div>
       </div>
