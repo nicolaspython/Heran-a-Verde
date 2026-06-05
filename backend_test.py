@@ -12,8 +12,12 @@ from typing import Dict, Any, Optional
 
 # Configuration
 BASE_URL = os.getenv("NEXT_PUBLIC_BASE_URL", "http://localhost:3000").rstrip("/") + "/api"
-ADMIN_EMAIL = "nicolaaaasxd@gmail.com"
-ADMIN_PASSWORD = "n!colas0202"
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not ADMIN_EMAIL or not ADMIN_PASSWORD:
+    print("Erro: defina ADMIN_EMAIL e ADMIN_PASSWORD como variáveis de ambiente antes de rodar os testes.")
+    sys.exit(1)
 
 # Test data
 SAMPLE_BASE64_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="

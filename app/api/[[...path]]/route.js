@@ -6,9 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 const MONGO_URL = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'heranca_verde';
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'nicolaaaasxd@gmail.com').toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'equipeheranca0202';
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!JWT_SECRET || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error('Missing required environment variables: JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD');
+}
 
 // ---------------- MongoDB connection (cached for serverless) ----------------
 async function getDb() {
