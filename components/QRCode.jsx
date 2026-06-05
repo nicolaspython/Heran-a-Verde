@@ -72,7 +72,7 @@ export default function MultiQR() {
             borderRadius: 12,
             border: "1px solid #ddd",
             textAlign: "center",
-            background: "#fff",
+            background: "#11e746",
           }}
         >
           {/* QR */}
