@@ -20,12 +20,12 @@ export default function AdminLoginPage() {
   }, [authChecked, user, router]);
 
   const submit = async () => {
-    if (!email || !password) { toast.error('Preencha email e senha'); return; }
+    if (!email || !password) { toast.error('Preencha email e senha, não é dificil man'); return; }
     setLoading(true);
     try {
       const r = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
       login(r.user, r.token);
-      toast.success('Bem-vindo(a) de volta!');
+      toast.success('Bem-vindo(a) ao painel admin!');
       router.replace('/admin');
     } catch (err) {
       toast.error(err.message);

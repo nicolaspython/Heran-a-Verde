@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 const MONGO_URL = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || 'heranca_verde';
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '***REMOVED***').toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '***REMOVED***';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'nicolaaaasxd@gmail.com').toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'equipeheranca0202';
 
 // ---------------- MongoDB connection (cached for serverless) ----------------
 async function getDb() {
