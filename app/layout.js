@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen flex flex-col bg-white dark:bg-zinc-950">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <AdminDataProvider>
+            <AdminDataProvider>  {/* ← adicionar */}
               <style>{`
                 @keyframes fadeUp {
                   from { opacity: 0; transform: translateY(12px); }
@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
                 {children}
               </main>
               <Toaster richColors position="bottom-right" />
-            </AdminDataProvider>
+            </AdminDataProvider>  {/* ← fechar */}
           </AuthProvider>
         </ThemeProvider>
       </body>
