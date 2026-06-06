@@ -101,3 +101,5 @@ credentials.json
 *.key
 .credentials
 senhas.txt
+
+.vercel

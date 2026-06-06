@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Search, Plus, Pencil, Star, Leaf } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Search, Plus, Pencil, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Leaf } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useAdminData } from '@/context/AdminDataContext';
 import ConfirmDelete from '@/components/admin/ConfirmDelete';
 import ImagesUploader from '@/components/admin/ImagesUploader';
 
@@ -18,10 +18,7 @@ function SpeciesSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex h-[88px]"
-        >
+        <div key={i} className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex h-[88px]">
           <div className="w-24 shrink-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
           <div className="flex-1 p-3 space-y-2.5">
             <div className="h-3.5 w-3/4 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-pulse" />
@@ -35,12 +32,25 @@ function SpeciesSkeleton() {
 }
 
 export default function SpeciesAdmin() {
-  const { species: items = [], categories = [], loading, invalidate } = useAdminData();
+  const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
   const empty = { scientificName: '', commonName: '', family: '', categoryId: '', description: '', characteristics: '', location: '', images: [], featured: false };
   const [form, setForm] = useState(empty);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([
+      api('/species').then(setItems).catch(() => {}),
+      api('/categories').then(setCategories).catch(() => {}),
+    ]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (s) => { setEditing(s); setForm({ ...empty, ...s }); setOpen(true); };
@@ -50,13 +60,12 @@ export default function SpeciesAdmin() {
       if (editing) await api(`/species/${editing.id}`, { method: 'PUT', body: JSON.stringify(form) });
       else await api('/species', { method: 'POST', body: JSON.stringify(form) });
       toast.success(editing ? 'Espécie atualizada!' : 'Espécie criada!');
-      setOpen(false);
-      invalidate('species');
+      setOpen(false); load();
     } catch (e) { toast.error(e.message); }
   };
 
   const remove = async (id) => {
-    try { await api(`/species/${id}`, { method: 'DELETE' }); toast.success('Removida'); invalidate('species'); }
+    try { await api(`/species/${id}`, { method: 'DELETE' }); toast.success('Removida'); load(); }
     catch (e) { toast.error(e.message); }
   };
 
@@ -64,11 +73,11 @@ export default function SpeciesAdmin() {
     try {
       await api(`/species/${s.id}`, { method: 'PUT', body: JSON.stringify({ featured: !s.featured }) });
       toast.success(s.featured ? 'Removido do destaque' : 'Adicionado ao destaque!');
-      invalidate('species');
+      load();
     } catch (e) { toast.error(e.message); }
   };
 
-  const filtered = useMemo(() => (items || []).filter((s) => {
+  const filtered = useMemo(() => items.filter((s) => {
     const q = search.toLowerCase();
     return !q || s.scientificName?.toLowerCase().includes(q) || s.commonName?.toLowerCase().includes(q);
   }), [items, search]);
@@ -90,9 +99,7 @@ export default function SpeciesAdmin() {
         </button>
       </div>
 
-      {loading ? (
-        <SpeciesSkeleton />
-      ) : (
+      {loading ? <SpeciesSkeleton /> : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map((s) => (
@@ -130,7 +137,6 @@ export default function SpeciesAdmin() {
               </div>
             ))}
           </div>
-
           {filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl mt-4">
               <Leaf className="h-10 w-10 text-zinc-200 dark:text-zinc-700" />
@@ -166,7 +172,7 @@ export default function SpeciesAdmin() {
                   <SelectTrigger className="mt-1 rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {(categories || []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

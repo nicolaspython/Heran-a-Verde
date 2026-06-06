@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, ChevronUp, ChevronDown, Star, X, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { api, getInitials } from '@/lib/api';
-import { useAdminData } from '@/context/AdminDataContext';
 import ConfirmDelete from '@/components/admin/ConfirmDelete';
 
 function TeamSkeleton() {
@@ -33,11 +32,19 @@ function TeamSkeleton() {
 }
 
 export default function TeamAdmin() {
-  const { team: items = [], loading, invalidate } = useAdminData();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const empty = { name: '', role: '', description: '', socialLinks: [], isMainCreator: false };
   const [form, setForm] = useState(empty);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api('/team').then(setItems).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (m) => { setEditing(m); setForm({ ...empty, ...m, socialLinks: m.socialLinks || [] }); setOpen(true); };
@@ -46,22 +53,21 @@ export default function TeamAdmin() {
     try {
       if (editing) await api(`/team/${editing.id}`, { method: 'PUT', body: JSON.stringify(form) });
       else await api('/team', { method: 'POST', body: JSON.stringify(form) });
-      toast.success('Salvo!'); setOpen(false);
-      invalidate('team');
+      toast.success('Salvo!'); setOpen(false); load();
     } catch (e) { toast.error(e.message); }
   };
 
   const remove = async (id) => {
-    try { await api(`/team/${id}`, { method: 'DELETE' }); invalidate('team'); toast.success('Removido'); }
+    try { await api(`/team/${id}`, { method: 'DELETE' }); load(); toast.success('Removido'); }
     catch (e) { toast.error(e.message); }
   };
 
   const move = async (idx, dir) => {
-    const newItems = [...(items || [])];
+    const newItems = [...items];
     const target = idx + dir;
     if (target < 0 || target >= newItems.length) return;
     [newItems[idx], newItems[target]] = [newItems[target], newItems[idx]];
-    invalidate('team');
+    setItems(newItems);
     await api('/team/reorder', { method: 'POST', body: JSON.stringify({ ids: newItems.map((m) => m.id) }) });
   };
 
@@ -77,11 +83,9 @@ export default function TeamAdmin() {
         </button>
       </div>
 
-      {loading ? (
-        <TeamSkeleton />
-      ) : (
+      {loading ? <TeamSkeleton /> : (
         <div className="space-y-2">
-          {(items || []).map((m, i) => (
+          {items.map((m, i) => (
             <div key={m.id} className="flex items-center gap-3 p-3 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:shadow-sm transition-shadow">
               <div className="flex flex-col gap-0.5 shrink-0">
                 <button onClick={() => move(i, -1)} className="h-6 w-6 flex items-center justify-center rounded-lg text-zinc-300 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
@@ -111,7 +115,7 @@ export default function TeamAdmin() {
               <ConfirmDelete onConfirm={() => remove(m.id)} label={m.name} />
             </div>
           ))}
-          {(items || []).length === 0 && (
+          {items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl">
               <Users className="h-10 w-10 text-zinc-200 dark:text-zinc-700" />
               <p className="text-sm">Nenhum membro cadastrado.</p>

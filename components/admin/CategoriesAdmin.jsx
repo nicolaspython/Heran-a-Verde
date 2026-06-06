@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { useAdminData } from '@/context/AdminDataContext';
 import ConfirmDelete from '@/components/admin/ConfirmDelete';
 
 function CategoriesSkeleton() {
@@ -22,24 +21,32 @@ function CategoriesSkeleton() {
 }
 
 export default function CategoriesAdmin() {
-  const { categories: items = [], loading, invalidate } = useAdminData();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
 
+  const load = useCallback(() => {
+    setLoading(true);
+    api('/categories').then(setItems).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
   const create = async () => {
     if (!name.trim()) return;
-    try { await api('/categories', { method: 'POST', body: JSON.stringify({ name }) }); setName(''); invalidate('categories'); toast.success('Categoria criada'); }
+    try { await api('/categories', { method: 'POST', body: JSON.stringify({ name }) }); setName(''); load(); toast.success('Categoria criada'); }
     catch (e) { toast.error(e.message); }
   };
 
   const update = async (id) => {
-    try { await api(`/categories/${id}`, { method: 'PUT', body: JSON.stringify({ name: editingName }) }); setEditingId(null); invalidate('categories'); toast.success('Atualizada'); }
+    try { await api(`/categories/${id}`, { method: 'PUT', body: JSON.stringify({ name: editingName }) }); setEditingId(null); load(); toast.success('Atualizada'); }
     catch (e) { toast.error(e.message); }
   };
 
   const remove = async (id) => {
-    try { await api(`/categories/${id}`, { method: 'DELETE' }); invalidate('categories'); toast.success('Removida'); }
+    try { await api(`/categories/${id}`, { method: 'DELETE' }); load(); toast.success('Removida'); }
     catch (e) { toast.error(e.message); }
   };
 
@@ -58,11 +65,9 @@ export default function CategoriesAdmin() {
         </button>
       </div>
 
-      {loading ? (
-        <CategoriesSkeleton />
-      ) : (
+      {loading ? <CategoriesSkeleton /> : (
         <div className="space-y-2">
-          {(items || []).map((c) => (
+          {items.map((c) => (
             <div key={c.id} className="flex items-center gap-2 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               {editingId === c.id ? (
                 <>
@@ -87,7 +92,7 @@ export default function CategoriesAdmin() {
               )}
             </div>
           ))}
-          {(items || []).length === 0 && <p className="text-center py-10 text-sm text-zinc-400">Nenhuma categoria criada ainda.</p>}
+          {items.length === 0 && <p className="text-center py-10 text-sm text-zinc-400">Nenhuma categoria criada ainda.</p>}
         </div>
       )}
     </div>
