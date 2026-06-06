@@ -2,10 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 const AdminDataContext = createContext(null);
 
-// Cache global em memória — persiste entre navegações sem re-fetch
 const _cache = {
   species: null,
   categories: null,
@@ -14,14 +14,14 @@ const _cache = {
 };
 
 export function AdminDataProvider({ children }) {
+  const { user } = useAuth();
   const [species, setSpecies] = useState(_cache.species);
   const [categories, setCategories] = useState(_cache.categories);
   const [team, setTeam] = useState(_cache.team);
-  const [loading, setLoading] = useState(!_cache.species || !_cache.categories || !_cache.team);
+  const [loading, setLoading] = useState(false);
   const started = useRef(false);
 
   const fetchAll = useCallback(async () => {
-    // Se já tem cache, usa direto
     if (_cache.species && _cache.categories && _cache.team) {
       setSpecies(_cache.species);
       setCategories(_cache.categories);
@@ -30,8 +30,8 @@ export function AdminDataProvider({ children }) {
       return;
     }
 
-    // Se já tem um fetch em andamento, espera ele
     if (_cache.promise) {
+      setLoading(true);
       await _cache.promise;
       setSpecies(_cache.species);
       setCategories(_cache.categories);
@@ -40,7 +40,7 @@ export function AdminDataProvider({ children }) {
       return;
     }
 
-    // Dispara os 3 fetches em paralelo
+    setLoading(true);
     _cache.promise = Promise.all([
       api('/species').then((d) => { _cache.species = d; setSpecies(d); }),
       api('/categories').then((d) => { _cache.categories = d; setCategories(d); }),
@@ -55,14 +55,25 @@ export function AdminDataProvider({ children }) {
     await _cache.promise;
   }, []);
 
-  // Pré-carrega assim que o provider monta (acontece no layout raiz)
+  // Só faz fetch quando há um usuário admin logado
   useEffect(() => {
+    if (!user) return;
     if (started.current) return;
     started.current = true;
     fetchAll();
-  }, [fetchAll]);
+  }, [user, fetchAll]);
 
-  // Chamado pelos sub-componentes após criar/editar/deletar
+  // Reseta quando faz logout
+  useEffect(() => {
+    if (!user) {
+      started.current = false;
+      _cache.species = null;
+      _cache.categories = null;
+      _cache.team = null;
+      _cache.promise = null;
+    }
+  }, [user]);
+
   const invalidate = useCallback((key) => {
     if (key === 'species' || !key) {
       _cache.species = null;
