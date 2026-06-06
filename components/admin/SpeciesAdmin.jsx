@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Plus, Pencil, Star } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Plus, Pencil, Star, Leaf } from 'lucide-react';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -9,22 +9,38 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Leaf } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAdminData } from '@/context/AdminDataContext';
 import ConfirmDelete from '@/components/admin/ConfirmDelete';
 import ImagesUploader from '@/components/admin/ImagesUploader';
 
+function SpeciesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex h-[88px]"
+        >
+          <div className="w-24 shrink-0 bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+          <div className="flex-1 p-3 space-y-2.5">
+            <div className="h-3.5 w-3/4 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-pulse" />
+            <div className="h-3 w-1/2 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse" />
+            <div className="h-5 w-20 bg-zinc-100 dark:bg-zinc-800 rounded-full animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function SpeciesAdmin() {
-  const [items, setItems] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const { species: items = [], categories = [], loading, invalidate } = useAdminData();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
   const empty = { scientificName: '', commonName: '', family: '', categoryId: '', description: '', characteristics: '', location: '', images: [], featured: false };
   const [form, setForm] = useState(empty);
-
-  const load = useCallback(() => api('/species').then(setItems).catch(() => {}), []);
-  useEffect(() => { load(); api('/categories').then(setCategories).catch(() => {}); }, [load]);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (s) => { setEditing(s); setForm({ ...empty, ...s }); setOpen(true); };
@@ -34,12 +50,13 @@ export default function SpeciesAdmin() {
       if (editing) await api(`/species/${editing.id}`, { method: 'PUT', body: JSON.stringify(form) });
       else await api('/species', { method: 'POST', body: JSON.stringify(form) });
       toast.success(editing ? 'Espécie atualizada!' : 'Espécie criada!');
-      setOpen(false); load();
+      setOpen(false);
+      invalidate('species');
     } catch (e) { toast.error(e.message); }
   };
 
   const remove = async (id) => {
-    try { await api(`/species/${id}`, { method: 'DELETE' }); toast.success('Removida'); load(); }
+    try { await api(`/species/${id}`, { method: 'DELETE' }); toast.success('Removida'); invalidate('species'); }
     catch (e) { toast.error(e.message); }
   };
 
@@ -47,11 +64,11 @@ export default function SpeciesAdmin() {
     try {
       await api(`/species/${s.id}`, { method: 'PUT', body: JSON.stringify({ featured: !s.featured }) });
       toast.success(s.featured ? 'Removido do destaque' : 'Adicionado ao destaque!');
-      load();
+      invalidate('species');
     } catch (e) { toast.error(e.message); }
   };
 
-  const filtered = useMemo(() => items.filter((s) => {
+  const filtered = useMemo(() => (items || []).filter((s) => {
     const q = search.toLowerCase();
     return !q || s.scientificName?.toLowerCase().includes(q) || s.commonName?.toLowerCase().includes(q);
   }), [items, search]);
@@ -73,48 +90,54 @@ export default function SpeciesAdmin() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map((s) => (
-          <div key={s.id} className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex hover:shadow-md transition-shadow">
-            <div className="w-24 shrink-0 bg-zinc-100 dark:bg-zinc-800 relative">
-              {s.images?.[0]
-                ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center"><Leaf className="h-7 w-7 text-zinc-300 dark:text-zinc-600" /></div>
-              }
-              {s.featured && (
-                <div className="absolute top-1.5 left-1.5 bg-amber-400 rounded-full p-0.5 shadow-sm">
-                  <Star className="h-2.5 w-2.5 text-white fill-white" />
+      {loading ? (
+        <SpeciesSkeleton />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filtered.map((s) => (
+              <div key={s.id} className="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex hover:shadow-md transition-shadow">
+                <div className="w-24 shrink-0 bg-zinc-100 dark:bg-zinc-800 relative">
+                  {s.images?.[0]
+                    ? <img src={s.images[0]} alt="" className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center"><Leaf className="h-7 w-7 text-zinc-300 dark:text-zinc-600" /></div>
+                  }
+                  {s.featured && (
+                    <div className="absolute top-1.5 left-1.5 bg-amber-400 rounded-full p-0.5 shadow-sm">
+                      <Star className="h-2.5 w-2.5 text-white fill-white" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="flex-1 p-3 min-w-0">
-              <p className="font-bold italic text-sm text-zinc-900 dark:text-zinc-50 truncate">{s.scientificName}</p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate mt-0.5">{s.commonName}</p>
-              {s.categoryName && (
-                <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-xs bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-medium">
-                  {s.categoryName}
-                </span>
-              )}
-              <div className="flex gap-0.5 mt-2">
-                <button onClick={() => toggleFeatured(s)} title={s.featured ? 'Remover destaque' : 'Destacar'}
-                  className={`h-7 w-7 flex items-center justify-center rounded-lg transition-colors ${s.featured ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' : 'text-zinc-300 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40'}`}>
-                  <Star className={`h-3.5 w-3.5 ${s.featured ? 'fill-amber-500' : ''}`} />
-                </button>
-                <button onClick={() => openEdit(s)} className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-                <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
+                <div className="flex-1 p-3 min-w-0">
+                  <p className="font-bold italic text-sm text-zinc-900 dark:text-zinc-50 truncate">{s.scientificName}</p>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate mt-0.5">{s.commonName}</p>
+                  {s.categoryName && (
+                    <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-xs bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-medium">
+                      {s.categoryName}
+                    </span>
+                  )}
+                  <div className="flex gap-0.5 mt-2">
+                    <button onClick={() => toggleFeatured(s)} title={s.featured ? 'Remover destaque' : 'Destacar'}
+                      className={`h-7 w-7 flex items-center justify-center rounded-lg transition-colors ${s.featured ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/40' : 'text-zinc-300 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40'}`}>
+                      <Star className={`h-3.5 w-3.5 ${s.featured ? 'fill-amber-500' : ''}`} />
+                    </button>
+                    <button onClick={() => openEdit(s)} className="h-7 w-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <ConfirmDelete onConfirm={() => remove(s.id)} label={s.scientificName} />
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl mt-4">
-          <Leaf className="h-10 w-10 text-zinc-200 dark:text-zinc-700" />
-          <p className="text-sm">Nenhuma espécie. Clique em &quot;Nova espécie&quot; para adicionar.</p>
-        </div>
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl mt-4">
+              <Leaf className="h-10 w-10 text-zinc-200 dark:text-zinc-700" />
+              <p className="text-sm">Nenhuma espécie. Clique em &quot;Nova espécie&quot; para adicionar.</p>
+            </div>
+          )}
+        </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -143,7 +166,7 @@ export default function SpeciesAdmin() {
                   <SelectTrigger className="mt-1 rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {(categories || []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
