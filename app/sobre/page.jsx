@@ -22,7 +22,7 @@ export default function SobrePage() {
         </p>
         <p>
           Cada espécie cadastrada nesta plataforma é parte da história da escola. Ao identificar, fotografar e
-          descrever as plantas que compõem nosso ambiente, buscamos despertar nos estudantes — e na comunidade —
+          descrever as plantas que compõem nosso ambiente, buscamos despertar nos estudantes e na comunidade
           a consciência sobre a importância da biodiversidade urbana.
         </p>
 
