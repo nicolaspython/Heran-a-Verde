@@ -48,7 +48,11 @@ export default function EspecieDetailPage({ params }) {
         <div>
           <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950/60 dark:to-teal-950/60 shadow-xl shadow-zinc-200/60 dark:shadow-none">
             {imgs[activeImg] ? (
-              <img src={imgs[activeImg]} alt={species.commonName} className="w-full h-full object-cover" />
+              <img 
+                src={imgs[activeImg]} 
+                alt={species.commonName || species.scientificName || "Imagem da espécie"} 
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Leaf className="h-32 w-32 text-emerald-200 dark:text-emerald-800" />
@@ -89,19 +93,22 @@ export default function EspecieDetailPage({ params }) {
             )}
           </div>
 
-<h1
-  className={`text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight ${
-    !species.commonName ? "italic" : ""
-  }`}
->
-  {species.commonName || species.scientificName}
-</h1>
+          {/* Nome Comum ou Científico como destaque principal */}
+          <h1
+            className={`text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight ${
+              !species.commonName ? "italic" : ""
+            }`}
+          >
+            {species.commonName || species.scientificName}
+          </h1>
 
-{species.commonName && (
-  <p className="text-xl text-zinc-500 dark:text-zinc-400 mt-2 font-medium italic">
-    {species.scientificName}
-  </p>
-)}
+          {/* Nome Científico como subtítulo secundário em itálico */}
+          {species.commonName && species.scientificName && (
+            <p className="text-xl text-zinc-500 dark:text-zinc-400 mt-2 font-medium italic">
+              {species.scientificName}
+            </p>
+          )}
+
           {species.family && (
             <p className="mt-2 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
               Família: <span className="text-zinc-600 dark:text-zinc-300 normal-case tracking-normal">{species.family}</span>
