@@ -89,12 +89,19 @@ export default function EspecieDetailPage({ params }) {
             )}
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-black italic tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
-            {species.scientificName}
-          </h1>
-          {species.commonName && (
-            <p className="text-xl text-zinc-400 dark:text-zinc-500 mt-2 font-medium">{species.commonName}</p>
-          )}
+<h1
+  className={`text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight ${
+    !species.commonName ? "italic" : ""
+  }`}
+>
+  {species.commonName || species.scientificName}
+</h1>
+
+{species.commonName && (
+  <p className="text-xl text-zinc-500 dark:text-zinc-400 mt-2 font-medium italic">
+    {species.scientificName}
+  </p>
+)}
           {species.family && (
             <p className="mt-2 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
               Família: <span className="text-zinc-600 dark:text-zinc-300 normal-case tracking-normal">{species.family}</span>

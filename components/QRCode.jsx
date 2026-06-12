@@ -12,6 +12,7 @@ const especies = [
   { id: 6, nome: "Areca bambu", url: "https://herancaverde.vercel.app/especies/1a70b930-8a64-4839-92bf-f65fda57e4ae" },
   { id: 7, nome: "Palmeira de manila", url: "https://herancaverde.vercel.app/especies/7c47aae9-b7c3-40b9-b926-855b79675dcf" },
   { id: 8, nome: "Ixora casei", url: "https://herancaverde.vercel.app/especies/feb1a99e-fd11-4ff4-bd2a-5f5f5f5da538" },
+  { id: 9, nome: "Buxinho", url: "https://herancaverde.vercel.app/especies/b7c307c5-8ab8-4287-aa35-31a33451060b" },
 ];
 
 export default function MultiQR() {
