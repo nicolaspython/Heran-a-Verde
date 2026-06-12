@@ -35,14 +35,22 @@ export default function SpeciesCard({ species, onClick }) {
         </div>
       </div>
       <div className="p-4">
-        <p className="font-bold italic text-zinc-900 dark:text-zinc-50 leading-snug line-clamp-1 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-          {species.scientificName || 'Sem nome científico'}
+        {/* Título Principal: Nome Comum (ou Científico caso não tenha comum) */}
+        <p className="font-bold text-zinc-900 dark:text-zinc-50 leading-snug line-clamp-1 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+          {species.commonName || species.scientificName || 'Sem nome'}
         </p>
-        {species.commonName && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium line-clamp-1">{species.commonName}</p>
+        
+        {/* Subtítulo: Nome Científico (só aparece se houver nome comum para evitar duplicar) */}
+        {species.commonName && species.scientificName && (
+          <p className="text-sm italic text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium line-clamp-1">
+            {species.scientificName}
+          </p>
         )}
+        
         {species.description && (
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 line-clamp-2 leading-relaxed">{species.description}</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 line-clamp-2 leading-relaxed">
+            {species.description}
+          </p>
         )}
       </div>
     </article>
