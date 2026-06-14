@@ -14,6 +14,7 @@ const especies = [
   { id: 8, nome: "Ixora casei", url: "https://herancaverde.vercel.app/especies/feb1a99e-fd11-4ff4-bd2a-5f5f5f5da538" },
   { id: 9, nome: "Buxinho", url: "https://herancaverde.vercel.app/especies/b7c307c5-8ab8-4287-aa35-31a33451060b" },
   { id: 10, nome: "abacaxi", url: "https://herancaverde.vercel.app/especies/84ef7fa1-3d88-4b0b-b633-63f9b5e0958e" },
+  { id: 11, nome: "Hibisco", url: "https://herancaverde.vercel.app/especies/a4be0793-f64f-48ad-ace6-f346e94effe7" },
 ];
 
 export default function MultiQR() {
