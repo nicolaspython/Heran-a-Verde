@@ -41,7 +41,7 @@ export default function HomePage() {
             <span className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">Verde</span>
           </h1>
           <p className="text-base sm:text-lg text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed mb-10">
-            Catalogando, preservando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez.
+            Catalogando e celebrando o patrimônio botânico da nossa escola. Uma planta de cada vez.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button onClick={() => router.push('/catalogo')} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all active:scale-[0.98]">
