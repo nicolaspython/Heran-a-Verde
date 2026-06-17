@@ -25,11 +25,6 @@ const especies = [
   { id: 19, nome: "Bananeira", url: "https://herancaverde.vercel.app/especies/58e8c9d9-30cc-48cf-b857-e12697e51994" },
   { id: 20, nome: "Bela emilia", url: "https://herancaverde.vercel.app/especies/c3a5b28c-2809-4633-b8f4-fd5d2fecbd6e" },
   { id: 21, nome: "Devlyn (NÃO PÕE NO CATALOGO FISICO.)", url: "https://img2.lovecell.com.br/0f46327f57a44323347656afda8dc103f1941db8a31aaf7cc859123f919f80b7.webp" },
-  { id: 22, nome: "", url: "" },
-  { id: 23, nome: "", url: "" },
-  { id: 24, nome: "", url: "" },
-  { id: 25, nome: "", url: "" },
-
 ];
 
 export default function MultiQR() {
