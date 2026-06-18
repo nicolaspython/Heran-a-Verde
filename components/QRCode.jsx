@@ -24,7 +24,6 @@ const especies = [
   { id: 18, nome: "Dracena red", url: "https://herancaverde.vercel.app/especies/80e6d5ef-1f70-45ef-8ce2-f396fdfd4af1" },
   { id: 19, nome: "Bananeira", url: "https://herancaverde.vercel.app/especies/58e8c9d9-30cc-48cf-b857-e12697e51994" },
   { id: 20, nome: "Bela emilia", url: "https://herancaverde.vercel.app/especies/c3a5b28c-2809-4633-b8f4-fd5d2fecbd6e" },
-  { id: 21, nome: "Devlyn (NÃO PÕE NO CATALOGO FISICO.)", url: "https://img2.lovecell.com.br/0f46327f57a44323347656afda8dc103f1941db8a31aaf7cc859123f919f80b7.webp" },
 ];
 
 export default function MultiQR() {
